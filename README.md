@@ -10,6 +10,7 @@ Written with Rust utilizing cursive, and roux for the interface and the reddit A
 1. Add ability to log in.
 2. Add ability to look at comments
 3. Add ability to upvote/downvote both comments and posts.
-3. Optimize.
+4. Optimize.
+5. Add better-looking theme.
 
 
