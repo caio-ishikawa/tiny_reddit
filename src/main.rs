@@ -12,6 +12,8 @@ async fn main() {
     let mut list = ListView::new();
     let mut siv = Cursive::new();
 
+    siv.load_toml(include_str!("theme/style.toml")).unwrap();
+
     let input = EditView::new();
 
     let dialog = Dialog::new().title("subreddit:").content(input);

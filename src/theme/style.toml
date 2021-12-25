@@ -1,0 +1,9 @@
+shadow = false
+borders = "outset"
+
+[colors]
+    view = ["#11151C"]
+    primary = ["white"]
+    secondary = ["white"]
+    title_primary = ["blue"]
+    background = ["white"]
