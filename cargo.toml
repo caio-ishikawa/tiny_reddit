@@ -7,5 +7,7 @@ edition = "2021"
 
 [dependencies]
 roux = "1.3.7"
+cursive-async-view = "0.5.0"
 cursive = { version = "0.16.3", features = ["toml"] }
 tokio = { version = "1.15.0", features = ["full"] }
+futures = "0.3"

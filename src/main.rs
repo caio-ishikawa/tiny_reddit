@@ -1,51 +1,96 @@
 extern crate cursive;
 mod reddit;
 use roux::Subreddit;
+use std::io;
 use tokio;
 use cursive::{Cursive, CursiveExt};
 use cursive::traits::*;
-use cursive::views::{Checkbox, Dialog, EditView, LinearLayout, ListView, SelectView, TextView};
+use cursive::views::{Checkbox, Dialog, EditView, LinearLayout, ListView, SelectView, TextView, TextArea};
+use futures::executor::block_on;
 
 #[tokio::main]
 async fn main() {
-    let default_posts = reddit::hot_posts("all").await;
-    let mut list = ListView::new();
     let mut siv = Cursive::new();
+    let sub = String::from("all");
 
+
+    siv.add_global_callback('q', |s| s.quit());
     siv.load_toml(include_str!("theme/style.toml")).unwrap();
+    start_page(&mut siv, sub).await;
 
+}
+
+// Displays 'r/all' by default and the input box for changing the subreddit, which calls change_sub to pop the last layer and display the new one //
+async fn start_page(siv: &mut Cursive, sub:String) {
+    // gets 'r/all' posts and formats as ListView //
+    let default_posts = reddit::hot_posts(sub.as_str()).await;
+    let list = format_list(default_posts).scrollable();
+
+    // Creates the input box for the subreddit changes //
+    let sub_dialog = Dialog::new().title("subs").content(EditView::new().on_submit(|s, text| {
+        s.pop_layer();
+        let output = change_sub(s, text);
+        s.add_layer(output);
+    }));
+
+    // Creates the Dialog view for the list of posts //
+    let dialog = Dialog::new().title(sub).content(list);
     let input = EditView::new();
 
-    let dialog = Dialog::new().title("subreddit:").content(input);
+    // Organizes the views into a linear layour //
+    let output = LinearLayout::vertical()
+                            .child(sub_dialog)
+                            .child(dialog);
+     
+    // Adds the linear layout as a ncurses layer //
+    siv.add_layer(output);
+    siv.run();
 
-    for idx in 0..default_posts.title.len() {
+}
+
+// Recursive function that sets new view subreddit based on user input //
+fn change_sub(siv: &mut Cursive, text: &str) -> LinearLayout {
+    // Gets new posts based on input and parses to List View//
+    let posts = reddit::hot_posts(text);
+    let new_posts = block_on(posts);
+    let new_list = format_list(new_posts);
+
+    // Creates input box for subreddit changes and recursively calls the function to change subreddits again //
+    let sub_dialog = Dialog::new().title("subs").content(EditView::new().on_submit(|s, text| {
+        s.pop_layer();
+        let output = change_sub(s, text);
+        s.add_layer(output);
+    })); 
+
+    // Organizes the views into a linear layout //
+    let output = LinearLayout::vertical().child(sub_dialog).child(Dialog::new().title(text).content(new_list.scrollable()));
+
+    return output;
+}
+
+// Formats the reddit posts for UI //
+fn format_list(posts: reddit::Posts) -> ListView {
+    let mut list = ListView::new();
+
+    for idx in 0..posts.title.len() {
         let mut content = String::new();
         let mut author = String::new();
         let mut comments = String::new();
         //author.push_str(" ");
-        author.push_str(default_posts.score[idx].to_string().as_str());
-        author.push_str(detect_score_bound(default_posts.score[idx]).as_str());
+        author.push_str(posts.score[idx].to_string().as_str());
+        author.push_str(detect_score_bound(posts.score[idx]).as_str());
         content.push_str("     | ");
-        content.push_str(default_posts.title[idx].as_str());
-        list.add_child(&content,  EditView::new().with_name("subreddit!"));
+        content.push_str(posts.title[idx].as_str());
+        list.add_child(&content,  EditView::new());
         author.push_str("user: ");
-        author.push_str(default_posts.author[idx].as_str());
+        author.push_str(posts.author[idx].as_str());
         list.add_child(&author, EditView::new());
         comments.push_str("     | comments: ");
-        comments.push_str(default_posts.comment_num[idx].to_string().as_str());
+        comments.push_str(posts.comment_num[idx].to_string().as_str());
         list.add_child(&comments, EditView::new());
         list.add_child("-----|", EditView::new());
-}
-
-    siv.add_layer(LinearLayout::vertical()
-        //.title(" r/rust ")
-        .child(dialog)
-        .child(list.scrollable())
-    );
-
-    siv.add_global_callback('q', |s| s.quit());
-
-    siv.run();
+    }
+    return list;
 }
 
 
