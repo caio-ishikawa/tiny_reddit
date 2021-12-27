@@ -24,6 +24,9 @@ fn start_page(siv: &mut Cursive, sub:String) {
     let all_posts= reddit::hot_posts(sub.as_str());
     let default_posts = block_on(all_posts);
     let list = format_list(default_posts).scrollable();
+        // Creates the Dialog view for the list of posts //
+    let dialog = Dialog::new().title(sub).content(list);
+    
 
     // Creates the input box for the subreddit changes //
     let sub_dialog = Dialog::new().title("subs").content(EditView::new().on_submit(|s, text| {
@@ -35,14 +38,10 @@ fn start_page(siv: &mut Cursive, sub:String) {
         if text.contains("com ") {
             let input: Vec<&str> = text.split_whitespace().collect();
             s.pop_layer();
-            let output = load_comments(s, "rust".to_string(), input[1]);
-            s.add_layer(output);
+            let output = load_comments(s, input[1].to_string(), input[2]);
+            s.add_layer(output.scrollable());
         }
     }));
-
-    // Creates the Dialog view for the list of posts //
-    let dialog = Dialog::new().title(sub).content(list);
-    let input = EditView::new();
 
     // Organizes the views into a linear layour //
     let output = LinearLayout::vertical()
@@ -54,16 +53,29 @@ fn start_page(siv: &mut Cursive, sub:String) {
     siv.run();
 }
 
-fn load_comments(siv: &mut Cursive, sub: String, id: &str) -> ListView {
+fn load_comments(siv: &mut Cursive, sub: String, id: &str) -> LinearLayout { 
     let comm= reddit::get_comments(sub, id);
     let comments = block_on(comm);
     let mut list = ListView::new();
 
-    for idx in 0..comments.author.len() {
-        list.add_child(comments.content[idx].as_str(), EditView::new());
+    let output = format_comments(comments);
+    return output;
+}
+
+fn format_comments(comments: reddit::Comments) -> LinearLayout {
+    let mut list = ListView::new();
+    for idx in 0..comments.content.len() {
+        let mut cont = String::new();
+        let mut author = String::new();
+
+        author.push_str(comments.author[idx].as_str());
+        cont.push_str(comments.content[idx].as_str());
+        list.add_child(author.as_str(), EditView::new());
+        list.add_child(cont.as_str(), EditView::new());
     }
 
-    return list;
+    let output = LinearLayout::vertical().child(Dialog::new().title("test").content(list.scrollable()).fixed_height(120).fixed_width(120));
+    return output;
 }
 
 // Formats the reddit posts for UI //
