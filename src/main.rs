@@ -28,9 +28,18 @@ async fn start_page(siv: &mut Cursive, sub:String) {
 
     // Creates the input box for the subreddit changes //
     let sub_dialog = Dialog::new().title("subs").content(EditView::new().on_submit(|s, text| {
-        s.pop_layer();
-        let output = change_sub(s, text);
-        s.add_layer(output);
+        if text.contains("sub") {
+            let input: Vec<&str> = text.split_whitespace().collect();
+            s.pop_layer();
+            let output = change_sub(s, input[1]);
+            s.add_layer(output);
+        }
+        if text.contains("com ") {
+            let input: Vec<&str> = text.split_whitespace().collect();
+            s.pop_layer();
+            let output = load_comments(s, "rust".to_string(), input[1]);
+            s.add_layer(output);
+        }
     }));
 
     // Creates the Dialog view for the list of posts //
@@ -53,19 +62,42 @@ fn change_sub(siv: &mut Cursive, text: &str) -> LinearLayout {
     // Gets new posts based on input and parses to List View//
     let posts = reddit::hot_posts(text);
     let new_posts = block_on(posts);
-    let new_list = format_list(new_posts);
+    let new_list = format_list(new_posts).scrollable();
 
     // Creates input box for subreddit changes and recursively calls the function to change subreddits again //
     let sub_dialog = Dialog::new().title("subs").content(EditView::new().on_submit(|s, text| {
-        s.pop_layer();
-        let output = change_sub(s, text);
-        s.add_layer(output);
+        if text.contains("sub ") {
+            let input: Vec<&str> = text.split_whitespace().collect();
+            let output = change_sub(s, input[1]);
+            s.pop_layer();
+            s.add_layer(output);
+        }
+        if text.contains("com ") {
+            let input: Vec<&str> = text.split_whitespace().collect();
+            s.pop_layer();
+            let output = load_comments(s, "rust".to_string(), input[1]);
+            s.add_layer(output);
+        }
     })); 
 
     // Organizes the views into a linear layout //
-    let output = LinearLayout::vertical().child(sub_dialog).child(Dialog::new().title(text).content(new_list.scrollable()));
+    let output = LinearLayout::vertical()
+                            .child(sub_dialog)
+                            .child(Dialog::new().title(text).content(new_list));
 
     return output;
+}
+
+fn load_comments(siv: &mut Cursive, sub: String, id: &str) -> ListView {
+    let comm= reddit::get_comments(sub, id);
+    let comments = block_on(comm);
+    let mut list = ListView::new();
+
+    for idx in 0..comments.author.len() {
+        list.add_child(comments.content[idx].as_str(), EditView::new());
+    }
+
+    return list;
 }
 
 // Formats the reddit posts for UI //
@@ -80,6 +112,8 @@ fn format_list(posts: reddit::Posts) -> ListView {
         author.push_str(posts.score[idx].to_string().as_str());
         author.push_str(detect_score_bound(posts.score[idx]).as_str());
         content.push_str("     | ");
+        content.push_str(posts.id[idx].as_str());
+        content.push_str(" | ");
         content.push_str(posts.title[idx].as_str());
         list.add_child(&content,  EditView::new());
         author.push_str("user: ");
@@ -87,12 +121,13 @@ fn format_list(posts: reddit::Posts) -> ListView {
         list.add_child(&author, EditView::new());
         comments.push_str("     | comments: ");
         comments.push_str(posts.comment_num[idx].to_string().as_str());
-        list.add_child(&comments, EditView::new());
+        list.add_child(&comments, EditView::new().on_submit(|s, text| {
+            s.add_layer(Dialog::new().title(text));
+        }));
         list.add_child("-----|", EditView::new());
     }
     return list;
 }
-
 
 // Detects the length of the upvote count, so that the beginning of each post title align //
 fn detect_score_bound(upvotes: f64) -> String {
