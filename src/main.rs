@@ -13,17 +13,16 @@ async fn main() {
     let mut siv = Cursive::new();
     let sub = String::from("all");
 
-
     siv.add_global_callback('q', |s| s.quit());
     siv.load_toml(include_str!("theme/style.toml")).unwrap();
-    start_page(&mut siv, sub).await;
-
+    start_page(&mut siv, sub);
 }
 
-// Displays 'r/all' by default and the input box for changing the subreddit, which calls change_sub to pop the last layer and display the new one //
-async fn start_page(siv: &mut Cursive, sub:String) {
+// Recursive function that displays 'r/all' by default and calls itself when user changes subreddit //
+fn start_page(siv: &mut Cursive, sub:String) {
     // gets 'r/all' posts and formats as ListView //
-    let default_posts = reddit::hot_posts(sub.as_str()).await;
+    let all_posts= reddit::hot_posts(sub.as_str());
+    let default_posts = block_on(all_posts);
     let list = format_list(default_posts).scrollable();
 
     // Creates the input box for the subreddit changes //
@@ -31,8 +30,7 @@ async fn start_page(siv: &mut Cursive, sub:String) {
         if text.contains("sub") {
             let input: Vec<&str> = text.split_whitespace().collect();
             s.pop_layer();
-            let output = change_sub(s, input[1]);
-            s.add_layer(output);
+            start_page(s, input[1].to_string());
         }
         if text.contains("com ") {
             let input: Vec<&str> = text.split_whitespace().collect();
@@ -54,38 +52,6 @@ async fn start_page(siv: &mut Cursive, sub:String) {
     // Adds the linear layout as a ncurses layer //
     siv.add_layer(output);
     siv.run();
-
-}
-
-// Recursive function that sets new view subreddit based on user input //
-fn change_sub(siv: &mut Cursive, text: &str) -> LinearLayout {
-    // Gets new posts based on input and parses to List View//
-    let posts = reddit::hot_posts(text);
-    let new_posts = block_on(posts);
-    let new_list = format_list(new_posts).scrollable();
-
-    // Creates input box for subreddit changes and recursively calls the function to change subreddits again //
-    let sub_dialog = Dialog::new().title("subs").content(EditView::new().on_submit(|s, text| {
-        if text.contains("sub ") {
-            let input: Vec<&str> = text.split_whitespace().collect();
-            let output = change_sub(s, input[1]);
-            s.pop_layer();
-            s.add_layer(output);
-        }
-        if text.contains("com ") {
-            let input: Vec<&str> = text.split_whitespace().collect();
-            s.pop_layer();
-            let output = load_comments(s, "rust".to_string(), input[1]);
-            s.add_layer(output);
-        }
-    })); 
-
-    // Organizes the views into a linear layout //
-    let output = LinearLayout::vertical()
-                            .child(sub_dialog)
-                            .child(Dialog::new().title(text).content(new_list));
-
-    return output;
 }
 
 fn load_comments(siv: &mut Cursive, sub: String, id: &str) -> ListView {
