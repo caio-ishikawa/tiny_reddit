@@ -6,4 +6,4 @@ borders = "outset"
     primary = ["white"]
     secondary = ["white"]
     title_primary = ["blue"]
-    background = ["white"]
+    background = ["black"]

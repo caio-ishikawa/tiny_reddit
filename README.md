@@ -13,5 +13,6 @@ Written with Rust utilizing cursive, and roux for the interface and the reddit A
 4. Optimize.
 
 ## BUGS/UNINTENTIONAL FEATURES:
-1. Comments only work for the rust subreddit currently.
+~~1. Comments only work for the rust subreddit currently.~~ fixed
 2. App crashes when the number of comments exceeds the limit given in the get_comments function.
+3. Box width ramdonly increases/decreases when changing subreddits.
