@@ -13,6 +13,7 @@ async fn main() {
     let sub = String::from("all");
 
     siv.add_global_callback('q', |s| s.quit());
+    siv.add_global_callback('b', |s| start_page(s, "all".to_owned()));
     siv.load_toml(include_str!("theme/style.toml")).unwrap();
     start_page(&mut siv, sub);
 }

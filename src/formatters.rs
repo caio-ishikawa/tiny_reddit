@@ -35,16 +35,14 @@ pub fn format_posts(posts: reddit::Posts) -> ListView {
         content.push_str(posts.id[idx].as_str());
         content.push_str(" | ");
         content.push_str(posts.title[idx].as_str());
-        list.add_child(&content,  EditView::new());
+        list.add_child("",  TextView::new(content));
         author.push_str("user: ");
         author.push_str(posts.author[idx].as_str());
-        list.add_child(&author, EditView::new());
+        list.add_child("", TextView::new(author));
         comments.push_str("     | comments: ");
         comments.push_str(posts.comment_num[idx].to_string().as_str());
-        list.add_child(&comments, EditView::new().on_submit(|s, text| {
-            s.add_layer(Dialog::new().title(text));
-        }));
-        list.add_child("-----|", EditView::new());
+        list.add_child("", TextView::new(comments));
+        list.add_child("", TextView::new("-----|"));
     }
     return list;
 }
