@@ -1,6 +1,6 @@
 use cursive::traits::*;
 use cursive::{Cursive, CursiveExt};
-use cursive::views::{ListView, EditView, LinearLayout, Dialog};
+use cursive::views::{ListView, EditView, LinearLayout, Dialog, TextArea, CircularFocus, TextView};
 use crate::reddit;
 
 pub fn format_comments(comments: reddit::Comments, sub: &str) -> LinearLayout {
@@ -11,8 +11,9 @@ pub fn format_comments(comments: reddit::Comments, sub: &str) -> LinearLayout {
 
         author.push_str(comments.author[idx].as_str());
         cont.push_str(comments.content[idx].as_str());
-        list.add_child(author.as_str(), EditView::new());
-        list.add_child(cont.as_str(), EditView::new());
+        list.add_child("", TextView::new(author));
+        list.add_child("", TextView::new(cont));
+        list.add_child("",TextView::new("--------\n".to_owned()));
     }
 
     let output = LinearLayout::vertical().child(Dialog::new().title(sub).content(list.scrollable()).fixed_height(120).fixed_width(120));
