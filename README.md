@@ -4,7 +4,7 @@ Tiny Reddit is a command line interface for Reddit. The goal is to have a lightw
 
 Written with Rust using [cursive](https://github.com/gyscos/cursive), and [roux](https://github.com/Kibouo/roux.rs) for the interface and the reddit API wrapper respectively.
 
-<img src="https://i.imgur.com/o7tfb3w.gif" height="250"/>
+<img src="https://i.imgur.com/M2g0nas.gif" height="250"/>
 
 ## TODO:
 1. Make commands for opening comments and posts more intuitive.
@@ -12,6 +12,7 @@ Written with Rust using [cursive](https://github.com/gyscos/cursive), and [roux]
 3. Improve comment layout.
 4. Add ability to upvote/downvote both comments and posts.
 5. Optimize.
+6. Add command to load more posts/comments.
 
 ## BUGS/UNINTENTIONAL FEATURES:
 ~~1. Comments only work for the rust subreddit currently.~~ fixed

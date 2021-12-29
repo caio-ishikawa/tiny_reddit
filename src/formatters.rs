@@ -38,7 +38,7 @@ pub fn format_posts(posts: reddit::Posts) -> ListView {
         title_str.push_str(posts.title[idx].as_str());
         comment_str.push_str(posts.comment_num[idx].to_string().as_str());
         user_str.push_str(posts.author[idx].as_str());
-        score_str.push_str(" ");
+        score_str.push_str(detect_score_bound(posts.score[idx]).as_str());
 
         // Sets up Text Views for use in the horizontal/vertical layouts //
         let mut score = TextView::new(score_str);
@@ -47,8 +47,10 @@ pub fn format_posts(posts: reddit::Posts) -> ListView {
         let users = TextView::new(user_str);
         score.set_style(ColorStyle::new(PaletteColor::Primary, Color::Rgb(0, 128, 0)));
 
+        let delimiter = TextView::new("-------------------------------\n");
+
         // Sets up Linear Layout views //
-        let vertical = LinearLayout::vertical().child(title).child(users).child(comments);
+        let vertical = LinearLayout::vertical().child(title).child(users).child(comments).child(delimiter);
         let horizontal = LinearLayout::horizontal().child(score).child(vertical);
 ;
         
@@ -58,21 +60,21 @@ pub fn format_posts(posts: reddit::Posts) -> ListView {
     return list;
 }
 
-pub fn detect_score_bound(upvotes: f64) -> String {
+pub fn detect_score_bound(upvotes: f64) -> String{
     let score = upvotes.to_string();
-    if score.len() == 1 {
-        "    | ".to_owned()
-    }
-    else if score.len() == 2 {
-        "   | ".to_owned()
+    if score.len() == 4 {
+        " ".to_owned()
     }
     else if score.len() == 3 {
-        "  | ".to_owned()
+        "  ".to_owned()
     }
-    else if score.len() == 4 { 
-        " | ".to_owned()
+    else if score.len() == 2 {
+        "   ".to_owned()
     }
-    else {
-        "| ".to_owned()
+    else if score.len() == 1 {
+        "    ".to_owned()
+    }
+    else { 
+        "".to_owned()
     }
 }
