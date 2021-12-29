@@ -13,6 +13,8 @@ Written with Rust using [cursive](https://github.com/gyscos/cursive), and [roux]
 4. Add ability to upvote/downvote both comments and posts.
 5. Optimize.
 6. Add command to load more posts/comments.
+7. Add ability to read posts.
+8. Figure out how to implement images.
 
 ## BUGS/UNINTENTIONAL FEATURES:
 ~~1. Comments only work for the rust subreddit currently.~~ fixed
