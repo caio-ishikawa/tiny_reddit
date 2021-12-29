@@ -20,7 +20,7 @@ pub struct Comments {
 pub async fn hot_posts(sub: &str) -> Posts {
     let subreddit = Subreddit::new(sub);
 
-    let hot = subreddit.hot(25, None).await;
+    let hot = subreddit.hot(15, None).await;
     let mut titles: Vec<String> = Vec::new();
     let mut subreddits: Vec<String> = Vec::new();
     let mut authors: Vec<String> = Vec::new();
@@ -51,7 +51,7 @@ pub async fn hot_posts(sub: &str) -> Posts {
 pub async fn get_comments(sub: String, id: &str) -> Comments {
     let subreddit = Subreddit::new(sub.as_str());
 
-    let comments = subreddit.article_comments(id, None, Some(100)).await;
+    let comments = subreddit.article_comments(id, None, Some(150)).await;
 
     let mut author: Vec<String> = Vec::new();
     let mut content: Vec<String> = Vec::new();

@@ -20,10 +20,11 @@ async fn main() {
 
 // Recursive function that displays 'r/all' by default and calls itself when user changes subreddit //
 fn start_page(siv: &mut Cursive, sub:String) {
+    siv.pop_layer();
     // gets 'r/all' posts and formats as ListView //
     let all_posts= reddit::hot_posts(sub.as_str());
     let default_posts = block_on(all_posts);
-    let list = formatters::format_posts(default_posts).scrollable();
+    let list= formatters::format_posts(default_posts).scrollable();
         // Creates the Dialog view for the list of posts //
     let dialog = Dialog::new().title(sub).content(list);
     
